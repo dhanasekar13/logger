@@ -1,25 +1,8 @@
 <template>
   <div>
   <nav class="navbar navbar-expand-sm bg-light">
-
-  <ul class="navbar-nav">
-    <li class="nav-item">From date : 
-      <input type="date" class="form-control" v-model="date1"/>
-    </li>
-    <li class="nav-item">To date : 
-      <input type="date" class="form-control" v-model="date2" v-on:change="change()"/>
-    </li>
-    <li class="nav-item">Search :
-          <form v-on:submit="hit">
-            <input class="form-control" type="text" placeholder="Search" aria-label="Search" v-model="text1">
-          </form>
-    </li>
-    <li class="nav-item" v-if="count>0">
-<span>{{temp}} <a href="#" v-on:click="counted(searchcount--)"><< </a> </span><input type="text" class="count" v-model="searchcount" v-on:change="counted(searchcount)"/> <a href="#" v-on:click="counted(searchcount++)"> >> </a><span> ({{count}}) </span>
-    </li>
-  </ul>
+  <Search :content="mini" v-on:changecontent="onChildChange" ></Search>
  
-
 </nav>
   <div id="mini">
      <pre>{{mini}}</pre>
@@ -95,6 +78,10 @@
         let end = self.mini.indexOf(self.endd)
         console.log(start,'--------time--',end)
         self.mini = self.mini.substring(start, end)
+        },
+        onChildChange: function(val){
+          var self = this
+          self.mini = val
         }
     }
   }
