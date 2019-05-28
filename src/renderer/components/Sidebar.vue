@@ -67,20 +67,9 @@
     methods: {
       call:function(filename, sear){
         var self = this
-         fs.readFile(filename,'utf-8', function(err, data){
-                 if(err){
-                     return 1;
-                 }
-                  self.result ={
-                     data,
-                     name:filename
-                 } 
                  self.count = sear + 1
                  console.log('the current file count',self.count)
-                  serverBus.$emit('selectedFileContent', self.result);
-                
-             })
-
+                 serverBus.$emit('selectedFileContent', sear);
       },
       remove:function(value, fileindex){
         this.show--

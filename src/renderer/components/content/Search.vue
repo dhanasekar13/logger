@@ -21,6 +21,7 @@
     <div class="col-sm" v-if="count>0">
 <span>{{temp}} <a href="#" v-on:click="countedb(searchcount--)"><< </a> </span><input type="number" class="count" v-model="searchcount" v-on:change="countedf(searchcount)" min=0 v-bind:max="count"/> <a href="#" v-on:click="countedf(searchcount++)"> >> </a><span> ({{count}}) </span>
     </div>
+    <span style="color:red" v-else>{{msg}}</span>
   </div>
   </div>
 </template>
@@ -40,7 +41,8 @@ import { serverBus } from '../../main'
           searchcount: 0,
           newsearch : '',
           searchindex: 0,
-          newcontent: ''
+          newcontent: '',
+          msg:''
         }
     },
       created() {
@@ -87,9 +89,16 @@ import { serverBus } from '../../main'
       },
        hit: function (event){
          var self = this
+         self.msg =''
           event.preventDefault(); 
           let replace = new RegExp(self.text1, "g")
-          self.count =  self.content.match(replace).length
+          console.log(self.content.match(replace),'------------replace')
+          if(self.content.match(replace) != null){
+              self.count =  self.content.match(replace).length
+          }else {
+            self.count = 0
+            self.msg = 'NO search result is found'
+          }
           self.searchcount = 0
           self.temp = self.text1
           self.text1 = ''

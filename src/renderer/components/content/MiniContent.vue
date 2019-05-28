@@ -21,6 +21,7 @@
     name: 'MiniContent',
     data(){
       return {
+        entireObj: [],
         mini: '',
         date1: '',
         date2: '',
@@ -37,11 +38,12 @@
     created() {
       var self = this
       serverBus.$on('uploadFileContent', (server)=>{
+        self.entireObj.push(server.data)
         self.mini = server.data
         self.newsearch= ''
       })
       serverBus.$on('selectedFileContent', (server)=>{
-        self.mini = server.data
+        self.mini = self.entireObj[server]
         self.count = 0
         self.temp = ''
         self.newsearch= ''
