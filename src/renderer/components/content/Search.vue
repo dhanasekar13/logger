@@ -1,28 +1,32 @@
 <template>
-    <div>
-  <ul class="navbar-nav">
-    <li class="nav-item">From date : 
+    <div class="container">
+  <div class="row">
+   <div class="col-sm">
+   
+    <label>From date :</label> <br />
+    
       <input type="date" class="form-control" v-model="date1"/>
-    </li>
-    <li class="nav-item">To date : 
+    </div>
+    <div class="col-sm">
+       <label>To date : </label><br />
       <input type="date" class="form-control" v-model="date2" v-on:change="change()"/>
-    </li>
-    <li class="nav-item">Search :
-          <form v-on:submit="hit">
-            <input class="form-control" type="text" placeholder="Search" aria-label="Search" v-model="text1">
+    </div>
+     <div class="col-sm">
+     <label>Search :</label><br />
+   
+          <form v-on:submit="hit" class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search"  placeholder="Search" aria-label="Search" v-model="text1" >
           </form>
-    </li>
-    <li class="nav-item" v-if="count>0">
-<span>{{temp}} <a href="#" v-on:click="counted(searchcount--)"><< </a> </span><input type="text" class="count" v-model="searchcount" v-on:change="counted(searchcount)"/> <a href="#" v-on:click="counted(searchcount++)"> >> </a><span> ({{count}}) </span>
-    </li>
-  </ul>
-  <div v-if="add != 0">
-        {{add}} <a href="#" v-on:click="remove()">X</a>
+    </div>
+    <div class="col-sm" v-if="count>0">
+<span>{{temp}} <a href="#" v-on:click="countedb(searchcount--)"><< </a> </span><input type="number" class="count" v-model="searchcount" v-on:change="countedf(searchcount)" min=0 v-bind:max="count"/> <a href="#" v-on:click="countedf(searchcount++)"> >> </a><span> ({{count}}) </span>
+    </div>
   </div>
   </div>
 </template>
 
 <script>
+import { serverBus } from '../../main'
  export default {
     name: 'Search',
     props:['content'],
@@ -36,32 +40,67 @@
           searchcount: 0,
           newsearch : '',
           searchindex: 0,
-          add: 0,
           newcontent: ''
         }
     },
+      created() {
+      var self = this
+      serverBus.$on('searchtext', (calltext)=>{
+         let replace = new RegExp(calltext, "g")
+          self.count =  self.content.match(replace).length
+          self.searchcount = 0
+          self.temp = calltext
+          self.text1 = ''
+          self.newsearch = self.content.substring(0, 300)
+          self.searchindex = self.content.indexOf(self.temp, 0)
+        return 1;
+      })
+      serverBus.$on('searchdat', (calldat)=>{
+         let current_datetime = new Date(calldat.sdate)
+        self.startd= current_datetime.toString().substring(0, 15);
+        let current_datetime1 = new Date(calldat.edate)
+        self.endd = current_datetime1.toString().substring(0, 15);
+        console.log(self.startd,'--------------',self.endd)
+        let start = self.content.indexOf(self.startd)
+        let end = self.content.lastIndexOf(self.endd)
+        console.log(start,'--------time--',end)
+        self.newcontent = self.content.substring(start, end)
+        this.$emit('changecontent', self.newcontent)
+        this.date1 = ''
+        this.date2 = ''
+      })
+    },
     methods: {
-       counted: function (data){
+       countedf: function (data){
           var self = this
           window.find(self.temp)
-          console.log('------',self.searchindex)
+          self.newsearch = self.content.substring(self.searchindex, 300)
           self.searchindex = self.content.indexOf(self.temp, self.searchindex + 1)
-          let start = self.searchindex
-          console.log('hitted--------',self.searchindex)
-          self.newsearch = self.content.substring(start, 300)
+          this.$emit('changetext', self.newsearch)
+      },
+       countedb: function (data){
+          var self = this
+          window.find(self.temp,0,1)
+          self.newsearch = self.content.substring(self.searchindex, 300)
+          self.searchindex = self.content.indexOf(self.temp, self.searchindex + 1)
+          this.$emit('changetext', self.newsearch)
       },
        hit: function (event){
          var self = this
-         console.log('--------Prop data----------',self.content,'-------------------')
-         
           event.preventDefault(); 
           let replace = new RegExp(self.text1, "g")
           self.count =  self.content.match(replace).length
+          self.searchcount = 0
           self.temp = self.text1
           self.text1 = ''
+           window.find(self.temp,0,0,1)
+          self.newsearch = self.content.substring(self.searchindex, 300)
           self.searchindex = self.content.indexOf(self.temp, self.searchindex + 1)
-          console.log(self.searchindex,'-------------')
-          self.newsearch = self.content.substring(self.searchindex, 500)
+          let datasend = {
+            text: self.temp
+          }
+          serverBus.$emit('search', datasend)
+          this.$emit('changetext', self.newsearch)
       },
       change: function(){
         var self = this
@@ -76,9 +115,14 @@
         console.log(start,'--------time--',end)
         self.newcontent = self.content.substring(start, end)
         this.$emit('changecontent', self.newcontent)
-        this.add = 'last filter'
+        this.add = 'last date filter ('+start+'---'+end+')'
         this.date1 = ''
         this.date2 = ''
+        let dat1 = {
+          sdate: self.startd,
+          edate: self.endd
+        }
+        serverBus.$emit('datesearch', dat1)
         },
         remove: function (){
           this.add =0

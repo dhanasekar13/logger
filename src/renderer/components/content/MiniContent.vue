@@ -1,19 +1,22 @@
 <template>
   <div>
   <nav class="navbar navbar-expand-sm bg-light">
-  <Search :content="mini" v-on:changecontent="onChildChange" ></Search>
+  <Search :content="mini" v-on:changecontent="onChildChange" v-on:changetext="changetextChange" ></Search>
  
 </nav>
   <div id="mini">
      <pre>{{mini}}</pre>
   </div>
+
   <textarea class="text1">{{newsearch}}</textarea>
-  </div>
+ </div>
 </template>
 
 <script>
  import { serverBus } from '../../main'
  import Search from './Search'
+ import Result from './Result'
+
   export default {
     name: 'MiniContent',
     data(){
@@ -34,54 +37,29 @@
     created() {
       var self = this
       serverBus.$on('uploadFileContent', (server)=>{
-        console.log('came before correct',server.data)
         self.mini = server.data
+        self.newsearch= ''
       })
       serverBus.$on('selectedFileContent', (server)=>{
         self.mini = server.data
         self.count = 0
         self.temp = ''
+        self.newsearch= ''
       })
     },
     components: { 
-      Search
+      Search, Result
        },
     methods: {
-      counted: function (data){
-          var self = this
-          window.find(self.temp)
-          console.log('------',self.searchindex)
-          self.searchindex = self.mini.indexOf(self.temp, self.searchindex + 1)
-          let start = self.searchindex
-          console.log('hitted--------',self.searchindex)
-          self.newsearch = self.mini.substring(start, 300)
-      },  
-       hit: function (event){
-         var self = this
-          event.preventDefault(); 
-          let replace = new RegExp(self.text1, "g")
-          self.count =  self.mini.match(replace).length
-          self.temp = self.text1
-          self.text1 = ''
-          self.searchindex = self.mini.indexOf(self.temp, self.searchindex + 1)
-          console.log(self.searchindex,'-------------')
-          self.newsearch = self.mini.substring(self.searchindex, 500)
-      },
-      change: function(){
-        var self = this
-        let current_datetime = new Date(self.date1)
-        self.startd= current_datetime.toString().substring(0, 15);
-        let current_datetime1 = new Date(self.date2)
-        self.endd = current_datetime1.toString().substring(0, 15);
-        console.log(self.startd,'--------------',self.endd)
-        let start = self.mini.indexOf(self.startd)
-        let end = self.mini.indexOf(self.endd)
-        console.log(start,'--------time--',end)
-        self.mini = self.mini.substring(start, end)
-        },
         onChildChange: function(val){
           var self = this
           self.mini = val
+          self.newsearch = ''
+        },
+        changetextChange: function(val){
+          var self = this 
+          console.log(val,'----in minicontent---NEW SEARCH-------------',val)
+          self.newsearch = val
         }
     }
   }
@@ -93,15 +71,12 @@
     overflow: scroll;
     overflow-x: hidden;
 }
-.text1{
-  width:98%;
-  min-height:100px;
-}
+
 .nav-item{
       margin-right: 10px;
     margin-left: 10px;
 }
 .count{
-      width: 16px;
+      width: 30px;
 }
 </style>
