@@ -15,6 +15,7 @@
         </li>
          <li class="link1" v-for="(item2, index1) in item.dat">
         <a class="link" v-on:click="searchdat(item2)" href="#">{{item2.sdate}} - to - {{item2.edate}}</a> <a href="#" v-on:click="remove1(index1, sear,item.dir)"><pre> X  </pre></a>
+       <a href="#"><span v-on:click="downloaddat(item2)" >||</span></a>
         </li>
       </ul>
     </td>
@@ -90,6 +91,9 @@
       },
       searchdat: function(dat1){
         serverBus.$emit('searchdat', dat1)
+      },
+      downloaddat: function (dat1){
+        serverBus.$emit('downloaddat', dat1)
       }
     }
   }
@@ -125,4 +129,6 @@ td ul a :hover {
 ul .link1 {
   display: inline-flex;
 }
+
+
 </style>

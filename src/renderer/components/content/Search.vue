@@ -4,12 +4,11 @@
    <div class="col-sm">
    
     <label>From date :</label> <br />
-    
-      <input type="date" class="form-control" v-model="date1"/>
+      <input type="datetime-local" id="date1" class="form-control" v-model="date1">
     </div>
     <div class="col-sm">
        <label>To date : </label><br />
-      <input type="date" class="form-control" v-model="date2" v-on:change="change()"/>
+      <input type="datetime-local" id="date2" class="form-control" v-model="date2" v-on:change="change()"/>
     </div>
      <div class="col-sm">
      <label>Search :</label><br />
@@ -27,7 +26,10 @@
 </template>
 
 <script>
+import $ from 'jquery'
 import { serverBus } from '../../main'
+ const fs = require('fs')
+const {dialog} = require('electron').remote
  export default {
     name: 'Search',
     props:['content'],
@@ -45,8 +47,13 @@ import { serverBus } from '../../main'
           msg:''
         }
     },
-      created() {
+     components: { 
+    
+       },
+        
+        created() {
       var self = this
+       $("#date1").datetimepicker('show')
       serverBus.$on('searchtext', (calltext)=>{
          let replace = new RegExp(calltext, "g")
           self.count =  self.content.match(replace).length
@@ -70,6 +77,30 @@ import { serverBus } from '../../main'
         this.$emit('changecontent', self.newcontent)
         this.date1 = ''
         this.date2 = ''
+      })
+      serverBus.$on('downloaddat', (calldat)=>{
+         let current_datetime = new Date(calldat.sdate)
+        self.startd= current_datetime.toString().substring(0, 15);
+        let current_datetime1 = new Date(calldat.edate)
+        self.endd = current_datetime1.toString().substring(0, 15);
+        console.log(self.startd,'--------------',self.endd)
+        let start = self.content.indexOf(self.startd)
+        let end = self.content.lastIndexOf(self.endd)
+        console.log(start,'--------time--',end)
+        self.newcontent = self.content.substring(start, end)
+        dialog.showSaveDialog((fileName) => {
+             if (fileName === undefined){
+                 console.log("You didn't save the file");
+                 return;
+              }
+             fs.writeFile(fileName, self.newcontent, (err) => {
+                if(err){
+                   alert("An error ocurred creating the file "+ err.message)
+                }
+                    
+        alert("The file has been succesfully saved");
+           });
+        }); 
       })
     },
     methods: {
@@ -118,6 +149,11 @@ import { serverBus } from '../../main'
         self.startd= current_datetime.toString().substring(0, 15);
         let current_datetime1 = new Date(self.date2)
         self.endd = current_datetime1.toString().substring(0, 15);
+        let start11 = current_datetime.toString().substring(25,15)
+        
+        let start12 = current_datetime1.toString().substring(25,15)
+        console.log(start11,'--------------dhansekar-------',start12)
+
         console.log(self.startd,'--------------',self.endd)
         let start = self.content.indexOf(self.startd)
         let end = self.content.lastIndexOf(self.endd)

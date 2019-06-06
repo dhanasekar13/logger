@@ -19,9 +19,12 @@
 <script>
 import { serverBus } from '../../main'
 const http = require("http");
+ const crypto = require('crypto');
  const fs = require('fs')
  const request = require('request')
  const {dialog} = require('electron').remote
+  const getStream = require('get-stream');
+      
   export default {
     name: 'Head',
     data() {
@@ -68,7 +71,7 @@ const http = require("http");
     console.log(error);
   });
       },
-     upload: function (event) {
+     upload: async function(event) {
          var self = this
          dialog.showOpenDialog((fileNames) =>{
              if(fileNames === undefined){
@@ -76,7 +79,7 @@ const http = require("http");
              }
              console.log('--------- This is filename----------',fileNames[0])
              self.filename = fileNames[0]
-             fs.readFile(fileNames[0],'utf-8', function(err, data1){
+             /*  fs.readFile(fileNames[0],'utf-8', function(err, data1){
                  if(err){
                      return 1;
                  }
@@ -88,11 +91,24 @@ const http = require("http");
                      data: ''+data1+ '',
                      name:self.filename || fileNames[0]
                  } 
-
                  console.log('INside upload server trigger')
                   serverBus.$emit('uploadFileContent', self.result);
                 return 1
-             })
+             }) */        
+             let alldata =''
+             let readStream = fs.createReadStream(fileNames[0]);
+                let result1 = {
+                    name:self.filename || fileNames[0]
+                }
+                readStream.on('data',(buff)=> alldata += buff.toString())
+                .on('end',()=> {
+                       self.result ={
+                     data:alldata,
+                     name:self.filename || fileNames[0]
+                } 
+                serverBus.$emit('uploadFileContent1', result1);
+                serverBus.$emit('uploadFileContent', self.result);
+               })
          })
      }
     }
